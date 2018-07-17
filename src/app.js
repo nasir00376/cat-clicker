@@ -2,6 +2,7 @@
 
 var model = {
     currentCat: null,
+    admin: false,
     cats: [
         {
             clickCount : 0,
@@ -47,6 +48,7 @@ var octupus = {
         // notify views to inilize the
         catListView.init(); 
         catView.init();
+        adminView.init();
         
     },
 
@@ -61,12 +63,28 @@ var octupus = {
     // set the currently-selected cat to the object passed in
     setCurrentCat: function(cat) {
         model.currentCat = cat;
+
+        catView.render();
+        adminView.render();
     },
 
     // Increment counter of currently selected cat
     incrementCounter: function() {
         model.currentCat.clickCount++;
-        catView.render()
+        catView.render();
+        adminView.render();
+    },
+
+    showForm: function() {
+        model.admin = true;
+    },
+
+    hideForm: function() {
+        model.admin = false;
+    },
+    
+    getFormStatus: function () {
+        return model.admin;
     }
 }
 
@@ -128,7 +146,6 @@ var catListView = {
             elem.addEventListener('click', (function(cat) {
                 return function() {
                     octupus.setCurrentCat(cat);
-                    catView.render();
                 }
             })(cat))
 
@@ -136,6 +153,53 @@ var catListView = {
             this.catListElem.appendChild(elem);
         }
 
+    }
+}
+
+// --->> Admin view <<---
+var adminView = {
+
+    init: function () {
+        // store pointers to our DOM elements for easy access
+
+        this.adminAreaElem = document.getElementById('admin');
+        this.nameElem = document.getElementById('name');
+        this.imgUrlElem = document.getElementById('img-url');
+        this.countElem = document.getElementById('count');
+
+        this.btnAdmin = document.getElementById('btn-admin');
+        this.btnCancel = document.getElementById('btn-cancel');
+        this.btnSubmit = document.getElementById('btn-submit');
+
+        // add click listener to admin btn
+
+        this.btnAdmin.addEventListener('click', function() {
+            octupus.showForm();
+            adminView.render();
+        });
+
+        this.btnCancel.addEventListener('click', function() {
+            octupus.hideForm();
+            adminView.render();
+        });
+
+        this.render();
+
+    },
+
+    render: function () {
+
+        //  get current cat and populate the form values
+        octupus.getFormStatus()
+        ? this.adminAreaElem.style.display = "block"
+        : this.adminAreaElem.style.display = "none";
+
+        var currentCat = octupus.getCurrentCat();
+        // Update the DOMs
+        // console.log(this.nameElem);
+        this.nameElem.value = currentCat.name;
+        this.imgUrlElem.value = currentCat.imgSrc;
+        this.countElem.value = currentCat.clickCount;
     }
 }
 
